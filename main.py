@@ -1,7 +1,8 @@
 """
     Tasks :
     
-    1- split each column per line into the variables described in the guidelin.
+    1- split each column per line into the variables described in the guideline.
+    2-
 
 """
 
@@ -33,15 +34,38 @@ if __name__ == "__main__":
     train_applications = applications[:split_point]
     eval_applications = applications[split_point:]
 
-    ages = {}
-    for application in applications:
-        age = application[1]
-        if age in ages:
-            ages[age] += 1
-        else:
-            ages[age] = 1
-        
-    ordered_ages = collections.OrderedDict(sorted(ages.items()))
+    number_of_columns = len(applications[0])
+    # print(number_of_columns)
+    # indexes 0 - 18 represent each attribute
+    identifiers = [None]*number_of_columns
 
-    plt.bar(list(ordered_ages.keys()), ordered_ages.values(), color='g')
+    for i in range(len(identifiers)):
+        new_attribute_dict = {}  # create a new dictionary for each identifier
+
+        for application in applications:
+            ith_attribute = application[i]
+            if ith_attribute in new_attribute_dict:
+                new_attribute_dict[ith_attribute] += 1
+            else:
+                new_attribute_dict[ith_attribute] = 1
+
+        ordered_dict = collections.OrderedDict(sorted(new_attribute_dict.items()))
+        identifiers[i] = ordered_dict        # when new dictionary is filled, set it in the identifiery list and move on to next identifier
+
+    ith_attribute = 1   #change the value from 0 - 18 to see histograms for each ith attribute
+
+    plt.bar(list(identifiers[ith_attribute].keys()), identifiers[ith_attribute].values(), color='g')
     plt.show()
+
+# ages = {}
+# for application in applications:
+#     age = application[1]
+#     if age in ages:
+#         ages[age] += 1
+#     else:
+#         ages[age] = 1
+
+# ordered_ages = collections.OrderedDict(sorted(ages.items()))
+
+# plt.bar(list(ordered_ages.keys()), ordered_ages.values(), color='g')
+# plt.show()
