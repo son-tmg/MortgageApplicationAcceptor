@@ -49,7 +49,7 @@ if __name__ == "__main__":
             else:
                 new_attribute_dict[ith_attribute] = 1
 
-        ordered_dict = collections.OrderedDict(sorted(new_attribute_dict.items()))
+        ordered_dict = collections.OrderedDict(sorted(new_attribute_dict.items()))  #sort the dictionary based on key
         identifiers[i] = ordered_dict        # when new dictionary is filled, set it in the identifiery list and move on to next identifier
 
     ith_attribute = 1   #change the value from 0 - 18 to see histograms for each ith attribute
