@@ -49,23 +49,16 @@ if __name__ == "__main__":
             else:
                 new_attribute_dict[ith_attribute] = 1
 
-        ordered_dict = collections.OrderedDict(sorted(new_attribute_dict.items()))  #sort the dictionary based on key
-        identifiers[i] = ordered_dict        # when new dictionary is filled, set it in the identifiery list and move on to next identifier
+        ordered_dict = collections.OrderedDict(
+            sorted(new_attribute_dict.items()))  # sort the dictionary based on key
+        # when new dictionary is filled, set it in the identifiery list and move on to next identifier
+        identifiers[i] = ordered_dict
 
-    ith_attribute = 1   #change the value from 0 - 18 to see histograms for each ith attribute
+    for ith_attribute in range(1, 18):
+        if ith_attribute not in [8,12,15,16]:
+            plt.bar(list(identifiers[ith_attribute].keys()),
+                    identifiers[ith_attribute].values(), color='g')
+            plt.show()
 
-    plt.bar(list(identifiers[ith_attribute].keys()), identifiers[ith_attribute].values(), color='g')
-    plt.show()
 
-# ages = {}
-# for application in applications:
-#     age = application[1]
-#     if age in ages:
-#         ages[age] += 1
-#     else:
-#         ages[age] = 1
 
-# ordered_ages = collections.OrderedDict(sorted(ages.items()))
-
-# plt.bar(list(ordered_ages.keys()), ordered_ages.values(), color='g')
-# plt.show()
