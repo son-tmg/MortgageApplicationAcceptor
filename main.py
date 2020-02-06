@@ -59,6 +59,40 @@ def naive_bayes_classifier(identifiers, number_of_columns):
 
 
 if __name__ == "__main__":
+
+
+    # naive_bayes_classifier(identifiers, number_of_columns)
+
+    train_df = pd.read_csv('TrainingData.csv',  header=None)
+    print(train_df)
+
+    #find columns containing null values, so that we can do dimensionality reduction later on
+    nan_values = pd.isna(train_df)  # Boolean DataFrame
+    nan_features = nan_values.any()  # Boolean Series
+    print(nan_features)
+
+    print(len(nan_values))
+    print("There are " + str(sum(nan_values[13])) +  " Nan values within column 13") #we will consider this feature unusable and drop it for now. But we cannot ignore the fact that it represents almost half of data rows
+    train_df = train_df.drop(13)
+
+    #find row indexes containing the missing values by cvonverting the feature columns in nan_values boolean datafram to integers, 0 or 1
+    nan_13_int = nan_values[13].astype(int)
+    nan_13_indexes = nan_13_int.to_numpy().nonzero()[0]    
+    print(nan_13_indexes)
+    # for i in nan_13_indexes:
+    #     nan_features[i,13] = nan_features[i-1,13]
+    # print(nan_values[2].unique())
+
+    # plot_df = train_df[[0, 1]]
+    # rounded_temp = plot_df[1].round(0)  # nearest integer
+    # plot_df = plot_df.groupby(rounded_temp).mean()
+    # plot_df.plot.scatter(x='Temperature', y='Weekly_Sales')
+    # plt.title('Temperature vs. Weekly Sales')
+    # plt.xlabel('Temperature (Fahrenheit)')
+    # plt.ylabel('Avg Weekly Sales (Dollars)')
+    # plt.show()
+
+
     applications = read_application('TrainingData.csv')
     # print(len(applications))
     split_point = int(.80*len(applications))
@@ -87,10 +121,8 @@ if __name__ == "__main__":
 
     frame = pd.Series(identifiers)
     print(frame)
-    # for ith_attribute in range(1, 18):
-    #     if ith_attribute not in [8, 12, 15, 16]:
-    #         plt.bar(list(identifiers[ith_attribute].keys()),
-    #                 identifiers[ith_attribute].values(), color='g')
-    #         plt.show()
-
-    naive_bayes_classifier(identifiers, number_of_columns)
+    for ith_attribute in range(1, 18):
+        if ith_attribute not in [8, 12, 15, 16]:
+            plt.bar(list(identifiers[ith_attribute].keys()),
+                    identifiers[ith_attribute].values(), color='g')
+            plt.show()
