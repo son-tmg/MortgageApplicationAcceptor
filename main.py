@@ -11,14 +11,22 @@ name_headers_train = name_headers[:-1]
 
 dftrain = pd.read_csv('trainingData.csv',
                       names=name_headers, header=0)
-dftrain = dftrain.replace(np.nan, '', regex=True)
-dftrain = dftrain.drop("id", axis=1)
 
 dfeval = pd.read_csv('ForEvaluation.csv',
                      names=name_headers_train, header=0)
-dfeval = dfeval.replace(np.nan, '', regex=True)
-dfeval = dfeval.drop('id', axis=1)
 
+# drop uneccessary column
+dftrain = dftrain.drop(columns=['id', 'CurrentResidenceYears', 'IsMarried', 'NumberOfDependants', 'Graduated', 'SelfEmployed', 'YearsOfJobStability', 'YearlySalary', 'CreditRating', 'CoApplicantAge',
+                                'CoApplicantYearsOfJobStability', 'CoApplicantYearlySalary', 'CoApplicantCreditRating', 'LoanTermInYears', 'LoanAmount', 'PropertyTotalCost', 'AreaClassification'], axis=1)
+
+dfeval = dfeval.drop(columns=['id',  'CurrentResidenceYears', 'IsMarried', 'NumberOfDependants', 'Graduated', 'SelfEmployed', 'YearsOfJobStability', 'YearlySalary', 'CreditRating', 'CoApplicantAge',
+                              'CoApplicantYearsOfJobStability', 'CoApplicantYearlySalary', 'CoApplicantCreditRating', 'LoanTermInYears', 'LoanAmount', 'PropertyTotalCost', 'AreaClassification'], axis=1)
+
+# replace nulls with empty string
+dftrain = dftrain.replace(np.nan, '', regex=True)
+dfeval = dfeval.replace(np.nan, '', regex=True)
+
+# set booleans to 0 or 1
 for column in dftrain:
     if dftrain[column].dtype == 'bool':
         dftrain[column] = dftrain[column].apply(
@@ -26,57 +34,51 @@ for column in dftrain:
         if(column != 'Approved'):
             dfeval[column] = dfeval[column].apply(
                 lambda x: 1 if x == True else 0)
-    elif dftrain[column].dtype == 'object':
-        print(column)
-        dftrain[column].astype(str)
-        if(column != 'Approved'):
-            dfeval[column] = dfeval[column].astype(str)
 
-
-y_train = dftrain
+# get training labels
+y_train = dftrain.pop('Approved')
 y_eval = dfeval
 
 # %%
 # dftrain[2].value_counts().plot(kind='bar')
-# dftrain['age'].value_counts().plot(kind='bar')
-dftrain.head()
-# dfeval.head()
-# dftrain.describe()
-# dftrain.shape[0]
-# dftrain.shape[1]
-# dftrain.IsMarried.value_counts().hist()
+print('train')
+dftrain.describe()
 
 # %%
+
+print('eval')
+dfeval.describe()
+# %%
+# find numerical and categorical feature columns
 
 numerical_column = []
 categorical_column = []
 feature_columns = []
 
+# put collumns into right category of column
 for column in dftrain:
-    print(column, ': ', dftrain[column].dtype)
-    if dftrain[column].dtype == 'int64':
-        numerical_column.append(column)
-    else:
-        categorical_column.append(column)
+    if column != 'Approved':
+        # print(column, ': ', dftrain[column].dtype)
+        if dftrain[column].dtype == 'int64':
+            numerical_column.append(column)
+        else:
+            categorical_column.append(column)
 
-print(numerical_column)
-print(categorical_column)
 
-# %%
-for column in categorical_column:
-    unique_values = dftrain[column].unique()
+# create feature columns
+for feature in categorical_column:
+    unique_values = dftrain[feature].unique()
     feature_columns.append(
         tf.feature_column.categorical_column_with_vocabulary_list(
-            column, unique_values))
+            feature, unique_values))
 
 for feature in numerical_column:
     feature_columns.append(
         tf.feature_column.numeric_column(feature, dtype=tf.int64))
 
+
 # %%
-
-# create input function
-
+# create input function to convert data to tf.data.Dataset
 
 def make_input_fn(data_df, labels, num_epochs=1, shuffle=True, batch_size=32):
     def input_function():
@@ -87,19 +89,34 @@ def make_input_fn(data_df, labels, num_epochs=1, shuffle=True, batch_size=32):
         return dataset
     return input_function
 
+# training and eval functions
 
-# %%
-# create and train model
+
 train_function = make_input_fn(dftrain, y_train)
+
 eval_train_function = make_input_fn(
     dfeval, y_eval, num_epochs=1, shuffle=False)
 
+
+# %%
+# create and train model
 linear_est = tf.estimator.LinearClassifier(feature_columns=feature_columns)
-
 linear_est.train(train_function)
-result = linear_est.evaluate(eval_train_function)
 
-clear_output()
-print('accuracy: ', result)
+
+# get result
+# result = linear_est.evaluate(eval_train_function)
+
+# clear_output()
+# print('result: ', result)
+# wont work, since the provided evaluation set does not have approved column for us to verify accuracy
+
+
+# %%
+
+pred_dicts = list(linear_est.predict(eval_train_function))
+probs = pd.Series([pred['probabilities'][1] for pred in pred_dicts])
+
+probs.plot(kind='hist', bins=20, title='predicted probabilities')
 
 # %%
